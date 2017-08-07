@@ -1,0 +1,150 @@
+package rpn
+
+import (
+	"strings"
+)
+
+const (
+	space            = " " //空格占位
+	comma            = "," //逗号分隔符，分隔函数参数
+	leftParenthesis  = "(" //左小括号，需要区分函数括号还是运算符括号
+	rightParenthesis = ")" //右小括号，需要区分函数括号还是运算符括号
+)
+
+var functionNames = []string{"@Log", "@Log10", "@Exp", "@Sqrt", "@Abs", "@Interp",
+	"@InterpBad", "@Cav", "@EFilt", "@Diff", "@Integ",
+	"@Shift", "@VaLim", "@MkBad", "@LoClp", "@HiClp",
+	"@Max", "@Min", "@IF", "@EQ", "@NE",
+	"@GT", "@GE", "@LT", "@LE", "@OR",
+	"@AND", "@NOT", "@BADVAL", "@PCT2", "@PFPCT",
+	"@REFPCT", "@SELECT", "@MAPRANGE", "@Spline"} //函数名称
+
+var operators = []string{"+", "-", "*", "/"} //符号名称
+
+//简单栈对象
+type stack struct {
+	datas []string
+}
+
+//压栈
+func push(s *stack, v string) {
+	s.datas = append(s.datas, v)
+}
+
+//出栈
+func pop(s *stack) (r string) {
+	if !empty(s) {
+		l := len(s.datas)
+		r = s.datas[l-1]
+		s.datas = append(s.datas[:l-1])
+	}
+	return
+}
+
+//栈是否为空
+func empty(s *stack) bool {
+	return len(s.datas) == 0
+}
+
+//栈是否仅剩余一个元素，是为true，否则为false
+func top(s *stack) bool {
+	return len(s.datas) == 1
+}
+
+//新建栈
+func newStack() *stack {
+	return &stack{}
+}
+
+//表达式解析函数
+//输入表达式串，输出逆波兰表达式结果
+func Parse(exp string) (rpn string) {
+
+	s := newStack()
+
+	exp = prepare(exp) //表达式预处理，关键字拆解
+
+	for _, fas := range strings.Fields(exp) { //处理函数部分
+
+		if isFN(fas) { //是函数名则压栈
+			push(s, fas)
+		} else {
+			switch fas {
+			case leftParenthesis:
+				push(s, fas)
+			case rightParenthesis:
+				for {
+					op := pop(s)
+					if op == leftParenthesis { //忽略左括号
+					} else {
+						rpn += space + op
+						if isFN(op) { //若为函数表达式名称，跳出循环
+							break
+						}
+					}
+				}
+
+			case comma: //","分隔符不做处理
+			default:
+				if len(rpn) > 0 {
+					rpn += space
+				}
+				rpn += fas
+			}
+		}
+	}
+
+	//	s = newStack()
+	//	for _, fas := range strings.Split(rpn, SPACE) { //处理运算部分
+	//		if isSN(fas) {
+
+	//		}else{
+
+	//		}
+	//	}
+
+	return
+}
+
+//表达式预处理，对函数名称或符号名称关键字进行拆分
+//例如输入：@EQ(SREIND,1)/100
+//输出为：@EQ ( SREIND,1 )  / 100
+func prepare(exp string) string {
+
+	//处理函数名称
+	for _, fn := range functionNames {
+		exp = strings.Replace(exp, fn, space+fn+space, -1)
+	}
+
+	//处理运算符号
+	for _, op := range operators {
+		exp = strings.Replace(exp, op, space+op+space, -1)
+	}
+
+	//处理左右括号及逗号
+	for _, s := range []string{comma, leftParenthesis, rightParenthesis} {
+		exp = strings.Replace(exp, s, space+s+space, -1)
+	}
+
+	return exp
+}
+
+//判断输入表达式是否为函数名称，是返回true，否则返回false
+func isFN(fn string) bool {
+	for _, functionName := range functionNames {
+		if fn == functionName {
+			return true
+		}
+	}
+	return false
+}
+
+//判断输入表达式是否为运算符，是返回true，否则返回false
+func isSN(op string) bool {
+	for _, operator := range operators {
+		if op == operator {
+			return true
+		}
+	}
+	return false
+}
