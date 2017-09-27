@@ -1,10 +1,10 @@
-package main
+package pubsub
 
 import (
-	. "github.com/sycdtk/gostudy/pubsub"
+	"testing"
 )
 
-func main() {
+func TestSubscribe(t *testing.T) {
 	c1 := &Client{Id: 100, Ip: "172.18.1.1"}
 	c3 := &Client{Id: 300, Ip: "172.18.1.3"}
 

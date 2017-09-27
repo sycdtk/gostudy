@@ -93,7 +93,7 @@ func (ch *Channel) Notify(message string) bool {
 }
 
 func (ch *Channel) ReplyMsg(message string) {
-	ch.waitGroup.Wrap(func() { fmt.Println(message) })
+	ch.waitGroup.Wrap(func(msg ...interface{}) { fmt.Println(msg) }, message)
 }
 
 func (ch *Channel) Wait() {

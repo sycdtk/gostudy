@@ -5,6 +5,7 @@ import (
 	"sync"
 )
 
+//订阅客户端
 type Client struct {
 	Id int
 	Ip string
@@ -70,4 +71,3 @@ func (srv *Server) PublishMessage(channelName, message string) (bool, error) {
 	ch.Wait()
 	return true, nil
 }
-
